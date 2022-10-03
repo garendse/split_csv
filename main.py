@@ -1,14 +1,31 @@
 import PySimpleGUI as sg
 import pandas as pd
+import os
+import shutil
 
 gchunk_size=5000
 gprefix="part_"
+
+# Clear generated files
+def _clean_files() -> None:
+    print("Cleaning data")
+    try:
+        with os.scandir("split") as entries:
+            for entry in entries:
+                if entry.is_dir() and not entry.is_symlink():
+                    shutil.rmtree(entry.path)
+                else:
+                    os.remove(entry.path)
+
+    except Exception as e:
+        print(e)
+
 
 def _split_csv_file(csv_file: str, chunk_size: int) -> None:
     try:
         for i, chunk in enumerate(pd.read_csv(csv_file, sep='|', chunksize=chunk_size, header=1)):
             print(f"Writing chunk {i}")
-            chunk.to_csv(gprefix + "-" + str(i) + ".csv", index=False, sep='|', na_rep="", header=True)
+            chunk.to_csv("split/" + gprefix + "-" + str(i) + ".csv", index=False, sep='|', na_rep="", header=False)
 
     except pd.errors.EmptyDataError:
         print("No data in file: " + csv_file)
@@ -40,6 +57,8 @@ if __name__ == '__main__':
 
     if len(csv_fname) > 0:
         try:
+            _clean_files()
+
             print("Reading", csv_fname)
             _split_csv_file(csv_fname, gchunk_size)
             print("Done")
