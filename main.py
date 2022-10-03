@@ -51,9 +51,14 @@ def _get_csv_filename() -> str:
             gprefix = values['-CKP-']
             return values["-CSV-"]
 
+        if event == "Cancel":
+            return "Cancel"
 
 if __name__ == '__main__':
     csv_fname = _get_csv_filename()
+
+    if csv_fname == "Cancel":
+        exit(0)
 
     if len(csv_fname) > 0:
         try:
